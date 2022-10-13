@@ -87,8 +87,6 @@ function renderCurrentWeather(city, weather) {
     $(".rightNow").append(cityDateEl, tempEl, windEl, humidityEl);  
 }
 
-// Function to display a FORECAST card given an object (from our renderForecast function) from open weather api
-// daily forecast.
 function renderForecastCard(forecast) {
     // variables for data from api
     var temp = forecast.temp.day;
@@ -190,10 +188,7 @@ function handleSearchFormSubmit(e) {
 function handleSearchHistoryClick(e) {
     // grab whatever city is is they clicked
     e.preventDefault();
-    console.log("You clicked the history");
-
     var search = $(this).text().trim();
-    console.log("city: "+search);
     fetchCoords(search);
 }
 
