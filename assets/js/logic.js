@@ -1,13 +1,12 @@
 // Global variables
 var searchHistory = [];
-var weatherRoot = "https://api.openweathermap.org/data/3.0/onecall";
+var weatherUrl = "https://api.openweathermap.org/data/3.0/onecall?";
 var apikey = "6779df867729d0c51536a7a447ed2011";
 
 // DOM element references
-// search form
-// search input
-// container/section for today's weather
-// container/section for the forecast 
+var searchInput = $("#cityName");
+var todayWeather = $(".rightNow");
+var forcast = $(".five-day");
 // search history container
 
 
@@ -39,80 +38,135 @@ function renderSearchHistory() {
   // Function to display the CURRENT weather data fetched from OpenWeather api.
   function renderCurrentWeather(city, weather) {
     // Store response data from our fetch request in variables
-      // temperature, wind speed, etc.
+    // temperature, wind speed, etc.
+    var temp = weather.temp;
+    var wind = weather.wind_speed;
+    var humidity = weather.humidity;
+    var clouds = weather.clouds;
+    //convert time to date
+    var date = new Date(weather.sunrise*1000)
+    date= date.toLocaleDateString('en-US');
+    //☀️🌤️⛅☁️
+    if (clouds>50) {
+        clouds="☁️";
+        } if(clouds>30) {
+        clouds="⛅";
+        } if(clouds>10) {
+        clouds="🌤️";
+        } if(clouds>10) {
+        clouds="☀️";
+        }
+
+    // dynamically create the elements 
+    var cityDateEl = $("<h3></h3>").text(city+" ("+date+") "+clouds);
+    var tempEl = $("<div></div>").text("Temp: "+temp+"°F");
+    var windEl = $("<div></div>").text("Wind: "+wind+" MPH");
+    var humidityEl = $("<div></div>").text("Humidity: "+humidity+"%");
   
-  
-    // document.create the elements you'll want to put this information in  
-  
-    // append those elements somewhere
-  
-    // give them their appropriate content
-  
+    // append to .rightNow
+    $(".rightNow").append(cityDateEl, tempEl, windEl, humidityEl);  
   }
   
   // Function to display a FORECAST card given an object (from our renderForecast function) from open weather api
   // daily forecast.
   function renderForecastCard(forecast) {
     // variables for data from api
-      // temp, windspeed, etc.
-  
+    var temp = forecast.temp.day;
+    var wind = forecast.wind_speed;
+    var humidity = forecast.humidity;
+    var clouds = forecast.clouds;
+    //convert time to date
+    var date = new Date(forecast.sunrise*1000)
+    date= date.toLocaleDateString('en-US');
+    //☀️🌤️⛅☁️
+    if (clouds>50) {
+    clouds="☁️";
+    } if(clouds>30) {
+    clouds="⛅";
+    } if(clouds>10) {
+    clouds="🌤️";
+    } if(clouds>10) {
+    clouds="☀️";
+    }
+
+    var cardEl = $("<div class='col-2 cards'></div>")
+    $(".cardRow").append(cardEl); 
+
     // Create elements for a card
+    var dateEl = $("<h4></h4>").text(date);
+    var cloudsEl = $("<div></div>").text(clouds);
+    var tempEl = $("<div></div>").text("Temp: "+temp+"°F");
+    var windEl = $("<div></div>").text("Wind: "+wind+" MPH");
+    var humidityEl = $("<div></div>").text("Humidity: "+humidity+"%");
   
-    // append
-  
-    // Add content to elements
-  
-    // append to forecast section
+    // append to .rightNow
+    $(cardEl).append(dateEl, cloudsEl, tempEl, windEl, humidityEl);  
+
   }
   
   // Function to display 5 day forecast.
   function renderForecast(dailyForecast) {
-  // set up elements for this section
-    
-  // append
-  
   // loop over dailyForecast
-  
-    for (var i = 0; i < dailyForecast.length; i++) {
-  
-      // send the data to our renderForecast function as an argument
-          renderForecastCard(dailyForecast[i]);
+    for (var i = 1; i < 6; i++) {
+        // send the data to our renderForecast function as an argument
+        renderForecastCard(dailyForecast[i]);
     }
   }
   
   function renderItems(city, data) {
-    renderCurrentWeather(city, data.list[0]);
-    renderForecast(data.list);
+    renderCurrentWeather(city, data.current);
+    renderForecast(data.daily);
   }
   
   // Fetches weather data for given location from the Weather Geolocation
   // endpoint; then, calls functions to display current and forecast weather data.
   function fetchWeather(location) {
-    // varialbles of longitude, latitude, city name - coming from location
-  
-    // api url
-  
+    var lat = location[0].lat;
+    var lon = location[0].lon;
+    var city = location[0].name;
     // fetch, using the api url, .then that returns the response as json, .then that calls renderItems(city, data)
-  
+    fetch(weatherUrl+"lat="+lat+"&lon="+lon+"&units=imperial&exclude=hourly,minutely,alerts&appid="+apikey)
+    .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+
+        renderItems(city,data);
+      });
   }
   
   function fetchCoords(search) {
-    // variable for you api url
-  
-    // fetch with your url, .then that returns the response in json, .then that does 2 things - calls appendToHistory(search), calls fetchWeather(the data)
-  
+    var geoUrl = "http://api.openweathermap.org/geo/1.0/direct?q=";
+
+    fetch(geoUrl+search+"&limit=1&appid="+apikey)
+    .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        if (!data[0]) {
+            return;
+        }
+        clearScreen();
+        appendToHistory(data);
+        fetchWeather(data);
+      });
+  }
+
+  function clearScreen(){
+    $(".cardRow").empty();
+    $(".rightNow").empty();
   }
   
   function handleSearchFormSubmit(e) {
     // Don't continue if there is nothing in the search form
-    if (!searchInput.value) {
+    if (!searchInput.val()) {
       return;
     }
   
     e.preventDefault();
-    var search = searchInput.value.trim();
+    var search = searchInput.val().trim();
     fetchCoords(search);
-    searchInput.value = '';
+    searchInput.val("");
   }
   
   function handleSearchHistoryClick(e) {
@@ -123,4 +177,5 @@ function renderSearchHistory() {
   
   initSearchHistory();
   // click event to run the handleFormSubmit 
+    $("#searchBtn").on("click", handleSearchFormSubmit);
   // click event to run the handleSearchHistoryClick

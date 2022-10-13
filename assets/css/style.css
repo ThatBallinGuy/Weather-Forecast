@@ -48,6 +48,7 @@ input {
 .rightNow {
     border: 1px solid black;
     margin-bottom: 20px;
+    min-height: 200px;
 }
 .rightNow > *{
     margin: 10px 5px;
@@ -63,4 +64,9 @@ input {
     margin: 2px;
     padding: 5px;
     max-width: 100%;
+}
+
+.cards>*{
+    margin: 2px;
+    padding: 5px;
 }
