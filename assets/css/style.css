@@ -30,10 +30,30 @@ input {
     height: 40px;
 }
 
-#search-btn::after{
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+    color: white;
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+#searchBtn{
+    margin-bottom: 40px;
+}
+
+#searchBtn::after{
     content: "";
     position: absolute;
-    top: 175px;
+    top: 230px;
     left: 0;
     right: 0;
     border-top: 1px solid gray;
@@ -52,10 +72,6 @@ input {
 }
 .rightNow > *{
     margin: 10px 5px;
-}
-
-.five-day>div{
-
 }
 
 .cards{

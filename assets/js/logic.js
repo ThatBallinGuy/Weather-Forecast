@@ -12,31 +12,51 @@ var forcast = $(".five-day");
 
 // Function to display the search history list.
 function renderSearchHistory() {
-    // empty the search history container
-  
+    $(".storedBtn").remove();
     // loop through the history array creating a button for each item
-  
-      // append to the search history container
-  }
-  
-  // Function to update history in local storage then updates displayed history.
-  function appendToHistory(search) {
+    for (let i = 0; i < searchHistory.length; i++) {
+        const element = searchHistory[i];
+
+        var btnEl = $("<button class='btn storedBtn'></button>").text(element);
+        // append to the search history container
+        $(".search").append(btnEl);  
+    }
+}
+
+// Function to update history in local storage then updates displayed history.
+function appendToHistory(search) {
+    //check for repeated values
+    for (let i = 0; i < searchHistory.length; i++) {
+        const history = searchHistory[i];
+        if (history == search) {
+            return;
+        }
+        
+    }
+
     // push search term into search history array
-  
+    searchHistory.push(search);
+    localStorage.setItem("cities", JSON.stringify(searchHistory));
+
     // set search history array to local storage
     renderSearchHistory();
-  }
-  
-  // Function to get search history from local storage
-  function initSearchHistory() {
-     // get search history item from local storage
-  
+}
+
+// Function to get search history from local storage
+function initSearchHistory() {
+    // get search history item from local storage
+    if (localStorage.getItem("cities")!==null) {
+        searchHistory= JSON.parse(localStorage.getItem("cities"));
+    }
+    else{
+        localStorage.setItem("cities", JSON.stringify(searchHistory));
+    }
     // set search history array equal to what you got from local storage
     renderSearchHistory();
-  }
-  
-  // Function to display the CURRENT weather data fetched from OpenWeather api.
-  function renderCurrentWeather(city, weather) {
+}
+
+// Function to display the CURRENT weather data fetched from OpenWeather api.
+function renderCurrentWeather(city, weather) {
     // Store response data from our fetch request in variables
     // temperature, wind speed, etc.
     var temp = weather.temp;
@@ -49,11 +69,11 @@ function renderSearchHistory() {
     //☀️🌤️⛅☁️
     if (clouds>50) {
         clouds="☁️";
-        } if(clouds>30) {
+        } else if(clouds>30) {
         clouds="⛅";
-        } if(clouds>10) {
+        } else if(clouds>10) {
         clouds="🌤️";
-        } if(clouds>10) {
+        } else {
         clouds="☀️";
         }
 
@@ -62,14 +82,14 @@ function renderSearchHistory() {
     var tempEl = $("<div></div>").text("Temp: "+temp+"°F");
     var windEl = $("<div></div>").text("Wind: "+wind+" MPH");
     var humidityEl = $("<div></div>").text("Humidity: "+humidity+"%");
-  
+
     // append to .rightNow
     $(".rightNow").append(cityDateEl, tempEl, windEl, humidityEl);  
-  }
-  
-  // Function to display a FORECAST card given an object (from our renderForecast function) from open weather api
-  // daily forecast.
-  function renderForecastCard(forecast) {
+}
+
+// Function to display a FORECAST card given an object (from our renderForecast function) from open weather api
+// daily forecast.
+function renderForecastCard(forecast) {
     // variables for data from api
     var temp = forecast.temp.day;
     var wind = forecast.wind_speed;
@@ -81,15 +101,16 @@ function renderSearchHistory() {
     //☀️🌤️⛅☁️
     if (clouds>50) {
     clouds="☁️";
-    } if(clouds>30) {
+    } else if(clouds>30) {
     clouds="⛅";
-    } if(clouds>10) {
+    } else if(clouds>10) {
     clouds="🌤️";
-    } if(clouds>10) {
+    } else {
     clouds="☀️";
     }
 
     var cardEl = $("<div class='col-2 cards'></div>")
+    
     $(".cardRow").append(cardEl); 
 
     // Create elements for a card
@@ -98,29 +119,26 @@ function renderSearchHistory() {
     var tempEl = $("<div></div>").text("Temp: "+temp+"°F");
     var windEl = $("<div></div>").text("Wind: "+wind+" MPH");
     var humidityEl = $("<div></div>").text("Humidity: "+humidity+"%");
-  
-    // append to .rightNow
+
     $(cardEl).append(dateEl, cloudsEl, tempEl, windEl, humidityEl);  
 
-  }
-  
-  // Function to display 5 day forecast.
-  function renderForecast(dailyForecast) {
-  // loop over dailyForecast
+}
+
+// Function to display 5 day forecast.
+function renderForecast(dailyForecast) {
+    // loop over dailyForecast
     for (var i = 1; i < 6; i++) {
         // send the data to our renderForecast function as an argument
         renderForecastCard(dailyForecast[i]);
     }
-  }
-  
-  function renderItems(city, data) {
+}
+
+function renderItems(city, data) {
     renderCurrentWeather(city, data.current);
     renderForecast(data.daily);
-  }
-  
-  // Fetches weather data for given location from the Weather Geolocation
-  // endpoint; then, calls functions to display current and forecast weather data.
-  function fetchWeather(location) {
+}
+
+function fetchWeather(location) {
     var lat = location[0].lat;
     var lon = location[0].lon;
     var city = location[0].name;
@@ -128,54 +146,59 @@ function renderSearchHistory() {
     fetch(weatherUrl+"lat="+lat+"&lon="+lon+"&units=imperial&exclude=hourly,minutely,alerts&appid="+apikey)
     .then(function (response) {
         return response.json();
-      })
-      .then(function (data) {
-
+    })
+    .then(function (data) {
         renderItems(city,data);
-      });
-  }
-  
-  function fetchCoords(search) {
+        appendToHistory(city);
+    });
+}
+
+function fetchCoords(search) {
     var geoUrl = "http://api.openweathermap.org/geo/1.0/direct?q=";
 
     fetch(geoUrl+search+"&limit=1&appid="+apikey)
     .then(function (response) {
         return response.json();
-      })
-      .then(function (data) {
+        })
+    .then(function (data) {
         if (!data[0]) {
             return;
         }
-        clearScreen();
-        appendToHistory(data);
-        fetchWeather(data);
-      });
-  }
+    clearScreen();
+    fetchWeather(data);
+        });
+}
 
-  function clearScreen(){
+function clearScreen(){
     $(".cardRow").empty();
     $(".rightNow").empty();
-  }
-  
-  function handleSearchFormSubmit(e) {
+}
+
+function handleSearchFormSubmit(e) {
     // Don't continue if there is nothing in the search form
+    console.log("You clicked search");
     if (!searchInput.val()) {
-      return;
+        return;
     }
-  
+
     e.preventDefault();
     var search = searchInput.val().trim();
     fetchCoords(search);
     searchInput.val("");
-  }
-  
-  function handleSearchHistoryClick(e) {
+}
+
+function handleSearchHistoryClick(e) {
     // grab whatever city is is they clicked
-    
+    e.preventDefault();
+    console.log("You clicked the history");
+
+    var search = $(this).text().trim();
+    console.log("city: "+search);
     fetchCoords(search);
-  }
-  
-  initSearchHistory();
-  // click event to run the handleFormSubmit 
-    $("#searchBtn").on("click", handleSearchFormSubmit);
-  // click event to run the handleSearchHistoryClick
+}
+
+initSearchHistory();
+// click event to run the handleFormSubmit 
+$("#searchBtn").on("click", handleSearchFormSubmit);
+// click event to run the handleSearchHistoryClick
+$(document).on("click", ".storedBtn", handleSearchHistoryClick);
