@@ -152,7 +152,7 @@ function fetchWeather(location) {
 }
 
 function fetchCoords(search) {
-    var geoUrl = "http://api.openweathermap.org/geo/1.0/direct?q=";
+    var geoUrl = "https://api.openweathermap.org/geo/1.0/direct?q=";
 
     fetch(geoUrl+search+"&limit=1&appid="+apikey)
     .then(function (response) {
